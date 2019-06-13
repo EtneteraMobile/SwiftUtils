@@ -132,7 +132,11 @@ public struct Throttle {
         let elapsedSinceLastFire = sinceReference - lastFire
 
         if elapsedSinceLastFire > delay {
-            queue.async(execute: workItems[identifier]!)
+            if queue == .main, Thread.isMainThread {
+                workItems[identifier]!.perform()
+            } else {
+                queue.async(execute: workItems[identifier]!)
+            }
         } else {
             queue.asyncAfter(deadline: .now() + (delay - elapsedSinceLastFire), execute: workItems[identifier]!)
         }
